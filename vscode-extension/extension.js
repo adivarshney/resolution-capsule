@@ -92,6 +92,7 @@ async function generate(payload) {
 
 function findEnginePath(repoRoot, extensionPath) {
   const candidates = [
+    path.join(extensionPath, "capsule_cli.py"),
     path.join(repoRoot, "capsule_cli.py"),
     path.join(extensionPath, "..", "capsule_cli.py"),
   ];

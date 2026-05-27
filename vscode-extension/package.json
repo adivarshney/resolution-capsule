@@ -1,17 +1,33 @@
 {
   "name": "resolution-capsule",
   "displayName": "Resolution Capsule",
-  "description": "Turn debugging context into sanitized, reviewable public knowledge drafts.",
+  "description": "Turn solved debugging sessions into sanitized, privacy-safe knowledge drafts ready for Stack Overflow, GitHub Discussions, or your team wiki.",
   "version": "0.1.0",
-  "publisher": "local",
+  "publisher": "your-publisher-name",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adivarshney/resolution-capsule"
+  },
+  "bugs": {
+    "url": "https://github.com/adivarshney/resolution-capsule/issues"
+  },
+  "homepage": "https://github.com/adivarshney/resolution-capsule#readme",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.85.0"
   },
-  "categories": ["Other"],
-  "activationEvents": [
-    "onCommand:resolutionCapsule.createFromSelection",
-    "onCommand:resolutionCapsule.createFromPrompts"
+  "categories": ["Other", "Snippets"],
+  "keywords": [
+    "debugging",
+    "knowledge base",
+    "sanitize",
+    "redact",
+    "stack overflow",
+    "incident",
+    "rca",
+    "privacy"
   ],
+  "activationEvents": [],
   "main": "./extension.js",
   "contributes": {
     "commands": [
@@ -30,20 +46,31 @@
         "resolutionCapsule.pythonPath": {
           "type": "string",
           "default": "python3",
-          "description": "Python executable used to run the local capsule engine."
+          "description": "Python 3 executable used to run the local capsule engine. Change this if your Python is at a non-standard path (e.g. /usr/local/bin/python3)."
         },
         "resolutionCapsule.sanitizationMode": {
           "type": "string",
           "enum": ["balanced", "strict"],
+          "enumDescriptions": [
+            "Redacts secrets, tokens, emails, IPs, and internal URLs.",
+            "Balanced redactions plus ticket IDs and long numeric identifiers."
+          ],
           "default": "balanced",
-          "description": "Default sanitizer mode."
+          "description": "Default sanitizer mode applied when generating a capsule."
         },
         "resolutionCapsule.enginePath": {
           "type": "string",
           "default": "",
-          "description": "Optional path to capsule_cli.py. Leave empty to auto-detect from the workspace or extension folder."
+          "description": "Optional absolute path to capsule_cli.py. Leave empty to use the bundled engine."
         }
       }
     }
+  },
+  "scripts": {
+    "vscode:prepublish": "echo 'No build step required'",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.0.0"
   }
 }
