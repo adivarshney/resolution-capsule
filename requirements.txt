@@ -1,0 +1,4 @@
+# Resolution Capsule has no third-party runtime dependencies.
+# The standard library covers everything (re, json, http.server, pathlib, argparse).
+# Install dev/test extras if needed:
+# pip install pytest

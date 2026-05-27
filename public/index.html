@@ -52,8 +52,9 @@
           </label>
 
           <div class="actions">
-            <button class="primary" type="submit">Generate Draft</button>
+            <button class="primary" id="generate" type="submit">Generate Draft</button>
             <button class="ghost" id="sample" type="button">Load Sample</button>
+            <button class="ghost" id="clear" type="button">Clear</button>
           </div>
         </form>
       </section>
@@ -74,7 +75,10 @@
         <section class="draft-panel">
           <div class="panel-heading">
             <h2>Publishable Draft</h2>
-            <button id="copy" type="button" disabled>Copy</button>
+            <div class="draft-actions">
+              <button id="copy" type="button" disabled>Copy</button>
+              <button id="download" type="button" disabled>Download .md</button>
+            </div>
           </div>
           <textarea id="markdown" class="mono" readonly placeholder="Your sanitized Stack Overflow-style draft will appear here."></textarea>
         </section>

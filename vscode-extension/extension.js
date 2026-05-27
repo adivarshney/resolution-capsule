@@ -23,22 +23,31 @@ async function createFromSelection() {
   }
 
   const rootCause = await vscode.window.showInputBox({ prompt: "Root cause" });
+  if (rootCause === undefined) return;
   const fix = await vscode.window.showInputBox({ prompt: "Final fix" });
+  if (fix === undefined) return;
+
   await generate({
     problem: "Captured from editor selection",
     error: selected,
-    rootCause: rootCause || "",
-    fix: fix || "",
+    rootCause,
+    fix,
   });
 }
 
 async function createFromPrompts() {
   const problem = await vscode.window.showInputBox({ prompt: "Problem" });
+  if (problem === undefined) return;
   const environment = await vscode.window.showInputBox({ prompt: "Environment" });
+  if (environment === undefined) return;
   const error = await vscode.window.showInputBox({ prompt: "Error or symptom" });
+  if (error === undefined) return;
   const attempts = await vscode.window.showInputBox({ prompt: "Attempts" });
+  if (attempts === undefined) return;
   const rootCause = await vscode.window.showInputBox({ prompt: "Root cause" });
+  if (rootCause === undefined) return;
   const fix = await vscode.window.showInputBox({ prompt: "Final fix" });
+  if (fix === undefined) return;
 
   await generate({ problem, environment, error, attempts, rootCause, fix });
 }
@@ -63,7 +72,14 @@ async function generate(payload) {
         return;
       }
 
-      const result = JSON.parse(stdout);
+      let result;
+      try {
+        result = JSON.parse(stdout);
+      } catch {
+        vscode.window.showErrorMessage(`Resolution Capsule: unexpected output — ${stdout.slice(0, 120)}`);
+        return;
+      }
+
       const doc = await vscode.workspace.openTextDocument({
         content: result.markdown,
         language: "markdown",

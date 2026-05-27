@@ -224,13 +224,25 @@ li + li {
   gap: 12px;
 }
 
-#copy {
+.draft-actions {
+  display: flex;
+  gap: 8px;
+}
+
+#copy,
+#download {
   min-height: 34px;
   color: #fff;
   background: var(--accent);
 }
 
-#copy:disabled {
+#copy:hover,
+#download:hover {
+  background: var(--accent-dark);
+}
+
+#copy:disabled,
+#download:disabled {
   border-color: var(--line);
   color: var(--muted);
   background: var(--paper);
@@ -240,6 +252,20 @@ li + li {
 #markdown {
   min-height: 100%;
   resize: none;
+}
+
+.not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 16px;
+  color: var(--muted);
+}
+
+.not-found a {
+  color: var(--accent);
 }
 
 @media (max-width: 980px) {

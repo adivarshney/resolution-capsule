@@ -27,6 +27,7 @@ def main():
     parser.add_argument("--file", help="Path to a JSON payload.")
     parser.add_argument("--mode", choices=["balanced", "strict"], default="balanced")
     parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
+    parser.add_argument("--output", help="Write output to this file instead of stdout.")
     for field in FIELDS:
         parser.add_argument(f"--{field}", default="")
 
@@ -35,10 +36,14 @@ def main():
     payload["mode"] = payload.get("mode") or args.mode
     result = build_capsule(payload)
 
-    if args.format == "json":
-        print(json.dumps(result, indent=2))
+    text = json.dumps(result, indent=2) if args.format == "json" else result["markdown"]
+
+    if args.output:
+        with open(args.output, "w", encoding="utf-8") as fh:
+            fh.write(text)
+        print(f"Capsule written to {args.output} ({result['confidence']})", file=sys.stderr)
     else:
-        print(result["markdown"])
+        print(text)
 
 
 if __name__ == "__main__":
