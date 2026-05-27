@@ -39,6 +39,14 @@
       {
         "command": "resolutionCapsule.createFromPrompts",
         "title": "Resolution Capsule: Create From Prompts"
+      },
+      {
+        "command": "resolutionCapsule.connectStackOverflow",
+        "title": "Resolution Capsule: Connect Stack Overflow"
+      },
+      {
+        "command": "resolutionCapsule.disconnectStackOverflow",
+        "title": "Resolution Capsule: Disconnect Stack Overflow"
       }
     ],
     "configuration": {
@@ -63,6 +71,21 @@
           "type": "string",
           "default": "",
           "description": "Optional absolute path to capsule_cli.py. Leave empty to use the bundled engine."
+        },
+        "resolutionCapsule.stackOverflow.clientId": {
+          "type": "string",
+          "default": "",
+          "description": "OAuth client ID from your Stack Apps registration (stackapps.com/apps/oauth/register)."
+        },
+        "resolutionCapsule.stackOverflow.clientSecret": {
+          "type": "string",
+          "default": "",
+          "description": "OAuth client secret from your Stack Apps registration."
+        },
+        "resolutionCapsule.stackOverflow.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Stack Exchange API key (optional, increases daily quota from 300 to 10 000 requests)."
         }
       }
     }
