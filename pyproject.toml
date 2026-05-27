@@ -1,0 +1,31 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "resolution-capsule"
+version = "0.1.0"
+description = "Turn AI-generated bug fixes into Stack Overflow contributions automatically"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+keywords = ["mcp", "stack-overflow", "ai", "debugging", "knowledge-sharing"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Software Development :: Documentation",
+]
+dependencies = [
+    "mcp>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/adivarshney/resolution-capsule"
+Repository = "https://github.com/adivarshney/resolution-capsule"
+Issues = "https://github.com/adivarshney/resolution-capsule/issues"
+
+[project.scripts]
+resolution-capsule = "resolution_capsule.mcp_server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["resolution_capsule"]
