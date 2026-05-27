@@ -2,7 +2,7 @@
   "name": "resolution-capsule",
   "displayName": "Resolution Capsule",
   "description": "Turn solved debugging sessions into sanitized, privacy-safe knowledge drafts ready for Stack Overflow, GitHub Discussions, or your team wiki.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "adivarshney",
   "repository": {
     "type": "git",
