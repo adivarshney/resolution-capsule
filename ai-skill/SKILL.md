@@ -1,28 +1,47 @@
-# Resolution Capsule Skill
+# Resolution Capsule — AI Assistant Integration Skill
 
-Use this skill when a developer wants to turn a solved engineering issue, bug, incident, test failure, or RCA into a sanitized public knowledge draft.
+## Purpose
 
-## Goal
+This skill tells an AI coding assistant (Cursor, GitHub Copilot, Claude Code, or any agent) how to automatically contribute a just-applied fix to Stack Overflow with zero extra steps from the developer.
 
-Create a publishable "Resolution Capsule" that preserves reusable technical value while removing workplace-specific, private, regulated, or proprietary details.
+The trigger is simple: when an AI assistant has just fixed a bug, it should invoke this skill so the fix reaches the community that indirectly made it possible.
+
+---
+
+## When to Invoke
+
+Invoke this skill after any of the following:
+
+- An AI-generated code fix has been applied and the problem is confirmed resolved
+- A developer runs a command like "share this fix" or "post to Stack Overflow"
+- An incident post-mortem or RCA is complete and the resolution is known
+- A test failure has been diagnosed and fixed
+
+Do **not** invoke if the fix is speculative, unverified, or still in progress.
+
+---
 
 ## Inputs
 
-- Problem: what failed and why it matters.
-- Environment: versions, runtime, OS, framework, cloud, CI/CD, database, or deployment context.
-- Error or logs: stack trace, command output, failing test, alert, or symptom.
-- Attempts: fixes tried before the root cause was known.
-- Root cause: the actual cause after investigation.
-- Fix: the final resolution or workaround.
-- Sanitization mode: `balanced` or `strict`.
+| Field | Required | Description |
+|---|---|---|
+| `problem` | yes | What failed and why it mattered |
+| `rootCause` | yes | The actual underlying cause |
+| `fix` | yes | The applied fix — code diff, config change, or command |
+| `environment` | no | Runtime, versions, OS, framework, cloud context |
+| `error` | no | The error message, stack trace, or failing output |
+| `attempts` | no | Things tried before the root cause was found |
+| `mode` | no | `balanced` (default) or `strict` |
+| `source` | no | `ai-assisted`, `manual`, or `pair-programming` |
+
+---
 
 ## Workflow
 
-1. Capture only the minimum context needed to explain the issue.
-2. Redact secrets, tokens, credentials, emails, internal URLs, IPs, user paths, ticket IDs, customer names, proprietary repo names, and business-specific architecture.
-3. Convert specific internal details into generic public equivalents.
-4. Preserve versions, error class names, public package names, public APIs, and reproducible steps when safe.
-5. Produce Markdown with these sections:
+1. **Capture** the minimum context needed to reproduce and understand the fix.
+2. **Redact** automatically: secrets, tokens, emails, IPs, internal URLs, user paths, ticket IDs, proprietary names.
+3. **Preserve** what is safe and useful: versions, public package names, error class names, reproducible steps.
+4. **Generate** a Markdown draft with these sections:
    - Problem
    - Environment
    - Error or Symptom
@@ -31,20 +50,48 @@ Create a publishable "Resolution Capsule" that preserves reusable technical valu
    - Resolution
    - Suggested Tags
    - Compliance Review Notes
-6. Require human review before publishing.
+5. **Post** via the Stack Exchange API if authenticated, or surface the draft for human review.
+6. **Never** claim the capsule is safe to publish without review. Always include confidence status.
+
+---
 
 ## Output Rules
 
-- Never claim the capsule is safe to publish without review.
-- Prefer concise, reproducible explanations over narrative incident reports.
-- Do not include full proprietary code. Use small pseudocode or generalized snippets only when needed.
-- Include failed attempts when they clarify the diagnosis.
-- If the root cause or fix is missing, mark the draft incomplete.
+- If root cause or fix is missing, mark the draft incomplete. Do not post.
+- Do not include full proprietary code. Use minimal diffs or pseudocode.
+- Prefer a reproducible explanation over a narrative incident report.
+- Include failed attempts when they help explain the diagnosis.
+- If the fix was AI-generated, note the source in the Compliance Review Notes section.
 
-## Local Engine
+---
 
-When this skill is used inside this repository, the local deterministic engine can be called with:
+## Calling the Local Engine
+
+When running inside this repository:
 
 ```bash
-python3 capsule_cli.py --format markdown --json '{"problem":"...","rootCause":"...","fix":"...","mode":"balanced"}'
+python3 capsule_cli.py \
+  --format json \
+  --source "ai-assisted" \
+  --json '{"problem":"...","rootCause":"...","fix":"...","mode":"balanced"}'
 ```
+
+Or pipe from a script:
+
+```bash
+echo '{"problem":"...","rootCause":"...","fix":"...","source":"ai-assisted"}' \
+  | python3 capsule_cli.py --format json
+```
+
+---
+
+## Integrating into an Agent Loop
+
+If you are an agent deciding whether to invoke this skill, use this heuristic:
+
+```
+if fix_was_applied and problem_is_resolved and context_has_root_cause:
+    invoke resolution_capsule(source="ai-assisted", ...)
+```
+
+The skill is cheap to invoke and the worst outcome is a draft that doesn't get posted. The best outcome is a contribution that helps hundreds of developers who hit the same bug.

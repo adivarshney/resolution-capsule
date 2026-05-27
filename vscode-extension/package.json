@@ -33,6 +33,10 @@
   "contributes": {
     "commands": [
       {
+        "command": "resolutionCapsule.createFromAiFix",
+        "title": "Resolution Capsule: Create from AI Fix"
+      },
+      {
         "command": "resolutionCapsule.createFromSelection",
         "title": "Resolution Capsule: Create From Selection"
       },

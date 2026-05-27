@@ -96,6 +96,7 @@ def infer_tags(environment, raw):
 
 def build_capsule(payload):
     mode = payload.get("mode", "balanced")
+    source = payload.get("source", "")  # e.g. "ai-assisted", "manual", "pair-programming"
     problem, problem_redactions = redact(payload.get("problem", ""), mode)
     environment, environment_redactions = redact(payload.get("environment", ""), mode)
     error, error_redactions = redact(payload.get("error", ""), mode)
@@ -121,6 +122,7 @@ def build_capsule(payload):
     if not fix or not root_cause:
         confidence = "Draft incomplete: add root cause and fix"
 
+    source_line = f"\n- Source: {source}" if source else ""
     markdown = f"""# {title}
 
 ## Problem
@@ -147,7 +149,7 @@ def build_capsule(payload):
 {", ".join(tags)}
 
 ## Compliance Review Notes
-- Sanitization mode: {mode}
+- Sanitization mode: {mode}{source_line}
 - Redactions applied: {sum(item["count"] for item in all_redactions)}
 - Review status: {confidence}
 """
@@ -156,6 +158,7 @@ def build_capsule(payload):
         "title": title,
         "tags": tags,
         "confidence": confidence,
+        "source": source,
         "redactions": summarize_redactions(all_redactions),
         "markdown": markdown,
     }

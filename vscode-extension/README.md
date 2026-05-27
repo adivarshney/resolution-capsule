@@ -1,34 +1,39 @@
 # Resolution Capsule
 
-Turn a solved debugging session into a privacy-safe, publishable knowledge draft — without leaving VS Code.
+AI coding assistants fix bugs using Stack Overflow knowledge. This extension makes those fixes go back to Stack Overflow automatically.
 
-## What it does
+## How it works
 
-When you fix a bug or close an incident, the context lives in your head and your editor. Resolution Capsule captures that context, automatically redacts secrets, emails, internal URLs, tokens, and private paths, and produces a Markdown draft you can post to Stack Overflow, GitHub Discussions, or your team wiki.
+1. Your AI assistant applies a fix
+2. Run **Resolution Capsule: Create from AI Fix**
+3. The extension captures your git diff as the fix, you describe the problem in two prompts
+4. A sanitized draft opens — one click posts it to Stack Overflow
 
-**Redacted automatically:**
-- API keys, bearer tokens, JWTs, GitHub tokens, Slack tokens
-- Emails, internal IPs, filesystem user paths, internal URLs
-- Private key blocks, generic credential assignments
-- Ticket IDs and long numeric identifiers *(strict mode)*
+No copy-pasting. No manual redaction. No tab-switching.
 
 ## Requirements
 
-Python 3 must be available on your `PATH` (or configured via `resolutionCapsule.pythonPath`). The engine ships bundled with the extension — no extra install needed.
+Python 3 on your `PATH` (or set `resolutionCapsule.pythonPath`). The sanitization engine ships bundled — no extra install.
 
-## Usage
+## Commands
 
-### Create from a selection
-1. Select logs, an error message, or stack trace text in any editor.
-2. Open the Command Palette (`Cmd+Shift+P` / `Ctrl+Shift+P`).
-3. Run **Resolution Capsule: Create From Selection**.
-4. Enter the root cause and fix when prompted.
-5. A sanitized Markdown draft opens in a new editor tab.
+| Command | What it does |
+|---|---|
+| **Create from AI Fix** | Captures your current git diff as the fix — the main workflow |
+| **Create From Selection** | Use selected text (logs, error, RCA notes) as the error field |
+| **Create From Prompts** | Fill in all fields manually |
+| **Connect Stack Overflow** | OAuth login — required once for auto-posting |
+| **Disconnect Stack Overflow** | Revokes stored token |
 
-### Create from prompts
-1. Open the Command Palette and run **Resolution Capsule: Create From Prompts**.
-2. Fill in each field (problem, environment, error, attempts, root cause, fix).
-3. Review the sanitized draft that opens.
+## Stack Overflow Setup
+
+Register a free app at [stackapps.com/apps/oauth/register](https://stackapps.com/apps/oauth/register) with OAuth domain `localhost`. Then add your credentials in VS Code settings:
+
+- `resolutionCapsule.stackOverflow.clientId`
+- `resolutionCapsule.stackOverflow.clientSecret`
+- `resolutionCapsule.stackOverflow.apiKey` *(optional — raises quota from 300 to 10,000/day)*
+
+Run **Connect Stack Overflow** once to authorise. After that, every capsule gets a "Post to Stack Overflow" button.
 
 ## Settings
 
@@ -37,6 +42,9 @@ Python 3 must be available on your `PATH` (or configured via `resolutionCapsule.
 | `resolutionCapsule.pythonPath` | `python3` | Python executable path |
 | `resolutionCapsule.sanitizationMode` | `balanced` | `balanced` or `strict` |
 | `resolutionCapsule.enginePath` | *(empty)* | Override path to `capsule_cli.py` |
+| `resolutionCapsule.stackOverflow.clientId` | *(empty)* | From stackapps.com |
+| `resolutionCapsule.stackOverflow.clientSecret` | *(empty)* | From stackapps.com |
+| `resolutionCapsule.stackOverflow.apiKey` | *(empty)* | From stackapps.com |
 
 ## Source
 

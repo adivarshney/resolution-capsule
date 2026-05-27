@@ -5,7 +5,7 @@ import sys
 from resolution_capsule import build_capsule
 
 
-FIELDS = ["problem", "environment", "error", "attempts", "rootCause", "fix"]
+FIELDS = ["problem", "environment", "error", "attempts", "rootCause", "fix", "source"]
 
 
 def read_payload(args):

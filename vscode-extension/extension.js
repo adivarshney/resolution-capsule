@@ -13,6 +13,7 @@ let extensionContext;
 function activate(context) {
   extensionContext = context;
   context.subscriptions.push(
+    vscode.commands.registerCommand("resolutionCapsule.createFromAiFix", createFromAiFix),
     vscode.commands.registerCommand("resolutionCapsule.createFromSelection", createFromSelection),
     vscode.commands.registerCommand("resolutionCapsule.createFromPrompts", createFromPrompts),
     vscode.commands.registerCommand("resolutionCapsule.connectStackOverflow", () =>
@@ -27,6 +28,48 @@ function activate(context) {
 }
 
 // ── Capsule generation ────────────────────────────────────────────────────────
+
+async function createFromAiFix() {
+  const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  if (!workspaceRoot) {
+    vscode.window.showWarningMessage("Open a workspace folder to use this command.");
+    return;
+  }
+
+  // Capture the current git diff as the fix
+  const diff = await new Promise((resolve) => {
+    cp.exec("git diff HEAD", { cwd: workspaceRoot, maxBuffer: 2 * 1024 * 1024 }, (err, stdout) => {
+      resolve(err ? "" : stdout.trim());
+    });
+  });
+
+  if (!diff) {
+    vscode.window.showWarningMessage(
+      "No uncommitted changes found. Apply your AI-generated fix first, then run this command."
+    );
+    return;
+  }
+
+  const problem = await vscode.window.showInputBox({
+    prompt: "What was the problem?",
+    placeHolder: "e.g. Build fails after upgrading the Node image",
+  });
+  if (problem === undefined) return;
+
+  const rootCause = await vscode.window.showInputBox({
+    prompt: "Root cause",
+    placeHolder: "e.g. Lockfile was generated before the plugin was added",
+  });
+  if (rootCause === undefined) return;
+
+  const environment = await vscode.window.showInputBox({
+    prompt: "Environment (optional)",
+    placeHolder: "e.g. Node 22, Vite, GitHub Actions",
+  });
+  if (environment === undefined) return;
+
+  await generate({ problem, rootCause, environment, fix: diff, source: "ai-assisted" });
+}
 
 async function createFromSelection() {
   const editor = vscode.window.activeTextEditor;
