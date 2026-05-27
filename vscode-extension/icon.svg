@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <clipPath id="pill">
+      <rect x="12" y="43" width="104" height="42" rx="21"/>
+    </clipPath>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0d6b65"/>
+      <stop offset="100%" stop-color="#094e4a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="128" height="128" rx="22" fill="url(#bg)"/>
+
+  <!-- Pill — left half (raw / redacted side) -->
+  <rect x="12" y="43" width="52" height="42" fill="#4db3ae" clip-path="url(#pill)"/>
+
+  <!-- Pill — right half (resolved / clean side) -->
+  <rect x="64" y="43" width="52" height="42" fill="#ffffff" clip-path="url(#pill)"/>
+
+  <!-- Subtle divider -->
+  <line x1="64" y1="43" x2="64" y2="85" stroke="#094e4a" stroke-width="1.5" opacity="0.2"/>
+
+  <!-- Left: three redaction bars (sanitized / hidden data) -->
+  <rect x="22" y="55" width="32" height="4" rx="2" fill="#094e4a" opacity="0.35"/>
+  <rect x="22" y="63" width="24" height="4" rx="2" fill="#094e4a" opacity="0.35"/>
+  <rect x="22" y="71" width="28" height="4" rx="2" fill="#094e4a" opacity="0.35"/>
+
+  <!-- Right: checkmark (resolved) -->
+  <polyline
+    points="77,63 84,72 101,51"
+    fill="none"
+    stroke="#0d6b65"
+    stroke-width="4.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

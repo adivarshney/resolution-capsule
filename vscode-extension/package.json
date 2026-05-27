@@ -12,6 +12,7 @@
     "url": "https://github.com/adivarshney/resolution-capsule/issues"
   },
   "homepage": "https://github.com/adivarshney/resolution-capsule#readme",
+  "icon": "icon.png",
   "license": "MIT",
   "engines": {
     "vscode": "^1.85.0"
