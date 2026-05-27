@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Resolution Capsule</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">privacy-first contribution builder</p>
+            <h1>Resolution Capsule</h1>
+          </div>
+          <div class="mode-control" role="group" aria-label="Sanitization mode">
+            <button class="mode active" data-mode="balanced" type="button">Balanced</button>
+            <button class="mode" data-mode="strict" type="button">Strict</button>
+          </div>
+        </header>
+
+        <form id="capsule-form" class="editor">
+          <label>
+            Problem
+            <textarea name="problem" placeholder="What broke, who was affected, and what made it worth capturing?"></textarea>
+          </label>
+
+          <label>
+            Environment
+            <textarea name="environment" placeholder="Runtime, package versions, OS, cloud service, CI/CD context..."></textarea>
+          </label>
+
+          <label>
+            Error or logs
+            <textarea name="error" class="mono" placeholder="Paste the failing command output, exception, stack trace, or incident symptom."></textarea>
+          </label>
+
+          <label>
+            Attempts
+            <textarea name="attempts" placeholder="What was tried before the root cause became clear?"></textarea>
+          </label>
+
+          <label>
+            Root cause
+            <textarea name="rootCause" placeholder="The underlying cause, stripped of proprietary architecture details."></textarea>
+          </label>
+
+          <label>
+            Fix
+            <textarea name="fix" placeholder="The final solution, config change, code pattern, or rollback steps."></textarea>
+          </label>
+
+          <div class="actions">
+            <button class="primary" type="submit">Generate Draft</button>
+            <button class="ghost" id="sample" type="button">Load Sample</button>
+          </div>
+        </form>
+      </section>
+
+      <aside class="review-pane" aria-live="polite">
+        <div class="status-strip">
+          <span id="confidence">Waiting for capsule</span>
+          <span id="tag-list"></span>
+        </div>
+
+        <section class="redaction-panel">
+          <h2>Redaction Report</h2>
+          <ul id="redactions">
+            <li>No scan has run yet.</li>
+          </ul>
+        </section>
+
+        <section class="draft-panel">
+          <div class="panel-heading">
+            <h2>Publishable Draft</h2>
+            <button id="copy" type="button" disabled>Copy</button>
+          </div>
+          <textarea id="markdown" class="mono" readonly placeholder="Your sanitized Stack Overflow-style draft will appear here."></textarea>
+        </section>
+      </aside>
+    </main>
+
+    <script src="/script.js"></script>
+  </body>
+</html>
