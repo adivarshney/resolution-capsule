@@ -26,15 +26,35 @@ The goal is zero friction between "fix applied" and "community helped."
 | Surface | Best for |
 |---|---|
 | **VS Code extension** | Capturing AI-generated fixes directly from your editor (git diff → post) |
+| **MCP server** | Runs inside Claude Code, Cursor, or any MCP-compatible AI assistant |
 | **CLI** | CI pipelines, scripts, batch processing of resolved incidents |
 | **Web UI** | Quick one-off drafts and testing the sanitizer |
-| **AI skill** | Embedding the workflow inside Cursor, Copilot, Claude Code, or any agent |
 
 ---
 
 ## VS Code Extension
 
 Install from the [marketplace](https://marketplace.visualstudio.com/items?itemName=adivarshney.resolution-capsule) or from the `.vsix` in `vscode-extension/`.
+
+**MCP server (Claude Code, Cursor, any MCP client):**
+
+```bash
+uvx resolution-capsule        # run directly, no install needed
+pipx install resolution-capsule  # install permanently
+```
+
+Add to `~/.claude/settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "resolution-capsule": {
+      "command": "uvx",
+      "args": ["resolution-capsule"]
+    }
+  }
+}
+```
 
 **Key command — Create from AI Fix:**
 
