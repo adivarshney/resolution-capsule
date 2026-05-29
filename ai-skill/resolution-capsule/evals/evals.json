@@ -1,0 +1,46 @@
+{
+  "skill_name": "resolution-capsule",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "my docker container keeps crashing with 'OOMKilled' — can you fix it",
+      "expected_output": "Skill triggers after applying the fix. Captures git diff, calls generate_capsule(), shows confidence + redactions, asks user to confirm posting, calls post_to_stack_overflow().",
+      "assertions": [
+        { "id": "captures_diff", "description": "Runs git diff to capture the fix before calling generate_capsule" },
+        { "id": "calls_generate_capsule", "description": "Calls generate_capsule() MCP tool with problem, root_cause, fix, and source=ai-assisted" },
+        { "id": "shows_confidence", "description": "Shows the confidence rating to the user before posting" },
+        { "id": "asks_before_posting", "description": "Asks user to confirm before calling post_to_stack_overflow" }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "fix this — TypeError: Cannot read properties of undefined (reading 'map') at line 42",
+      "expected_output": "After fixing the TypeError, skill auto-triggers. Extracts the error message as the 'error' field, captures diff, generates capsule, reviews with user, posts.",
+      "assertions": [
+        { "id": "captures_diff", "description": "Runs git diff to capture the fix" },
+        { "id": "uses_error_message", "description": "Passes the original TypeError as the error field to generate_capsule" },
+        { "id": "calls_generate_capsule", "description": "Calls generate_capsule() MCP tool" },
+        { "id": "does_not_post_without_confirm", "description": "Does not call post_to_stack_overflow without user confirmation" }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "add a dark mode toggle to the settings page",
+      "expected_output": "Skill does NOT trigger — this is a new feature request, not a bug fix. No generate_capsule call.",
+      "assertions": [
+        { "id": "skill_does_not_trigger", "description": "Does not call generate_capsule() — this is a feature, not a bug fix" }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "my github actions workflow is failing with 'npm ERR! code ENOENT' — help",
+      "expected_output": "After fixing the CI failure, skill triggers. Captures diff, sets source=ai-assisted, detects github-actions tag, generates capsule, posts.",
+      "assertions": [
+        { "id": "captures_diff", "description": "Runs git diff to capture the fix" },
+        { "id": "calls_generate_capsule", "description": "Calls generate_capsule() with source=ai-assisted" },
+        { "id": "github_actions_tag", "description": "Generated capsule includes github-actions in tags" },
+        { "id": "asks_before_posting", "description": "Confirms with user before posting" }
+      ]
+    }
+  ]
+}
