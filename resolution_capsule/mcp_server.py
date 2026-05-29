@@ -3,12 +3,53 @@ import json
 import os
 import urllib.parse
 import urllib.request
+from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
 
 from .engine import build_capsule
 
 mcp = FastMCP("resolution-capsule")
+
+# Credentials are stored once in ~/.config/resolution-capsule/credentials.json
+_CREDS_PATH = Path.home() / ".config" / "resolution-capsule" / "credentials.json"
+
+
+def _load_creds() -> dict:
+    try:
+        return json.loads(_CREDS_PATH.read_text())
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+
+def _save_creds(data: dict):
+    _CREDS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    _CREDS_PATH.write_text(json.dumps(data, indent=2))
+
+
+# ── Tools ──────────────────────────────────────────────────────────────────────
+
+@mcp.tool()
+def setup_credentials(access_token: str, api_key: str = "") -> dict:
+    """
+    Save Stack Overflow credentials once. After this, post_to_stack_overflow
+    works without any extra arguments — credentials are loaded automatically.
+
+    Get your access_token and api_key by registering a free app at:
+    https://stackapps.com/apps/oauth/register
+    (OAuth domain: localhost, then run: Resolution Capsule: Connect Stack Overflow in VS Code)
+    """
+    _save_creds({"access_token": access_token, "api_key": api_key})
+    return {"status": "ok", "message": "Credentials saved. You won't need to enter them again."}
+
+
+@mcp.tool()
+def credentials_status() -> dict:
+    """Check whether Stack Overflow credentials are saved."""
+    creds = _load_creds()
+    if creds.get("access_token"):
+        return {"configured": True, "has_api_key": bool(creds.get("api_key"))}
+    return {"configured": False, "message": "Run setup_credentials() to connect Stack Overflow."}
 
 
 @mcp.tool()
@@ -25,10 +66,10 @@ def generate_capsule(
     """
     Sanitize a resolved bug and produce a Stack Overflow-ready draft.
 
-    Returns title, tags, confidence, redactions, markdown, and source.
-    Always call this before post_to_stack_overflow.
+    Returns title, tags, confidence, redaction_count, markdown, and source.
+    Call this first, then post_to_stack_overflow if the user confirms.
     """
-    return build_capsule({
+    result = build_capsule({
         "problem": problem,
         "rootCause": root_cause,
         "fix": fix,
@@ -38,6 +79,9 @@ def generate_capsule(
         "source": source,
         "mode": mode,
     })
+    # Add a flat redaction_count for easy display
+    result["redaction_count"] = sum(r["count"] for r in result.get("redactions", []))
+    return result
 
 
 @mcp.tool()
@@ -45,25 +89,23 @@ def post_to_stack_overflow(
     title: str,
     markdown: str,
     tags: list[str],
-    access_token: str = "",
-    api_key: str = "",
 ) -> dict:
     """
-    Post a generated capsule to Stack Overflow as a new question.
+    Post a capsule to Stack Overflow. Credentials are loaded automatically
+    from ~/.config/resolution-capsule/credentials.json — no token needed here.
 
-    Requires a Stack Exchange access token — pass it directly or set the
-    STACK_OVERFLOW_TOKEN environment variable. Get a token by registering
-    a free app at stackapps.com/apps/oauth/register.
+    If credentials aren't saved yet, call setup_credentials() first.
     """
-    token = access_token or os.environ.get("STACK_OVERFLOW_TOKEN", "")
-    key = api_key or os.environ.get("STACK_EXCHANGE_API_KEY", "")
+    creds = _load_creds()
+
+    # Fall back to env vars for CI/scripting use cases
+    token = creds.get("access_token") or os.environ.get("STACK_OVERFLOW_TOKEN", "")
+    key = creds.get("api_key") or os.environ.get("STACK_EXCHANGE_API_KEY", "")
 
     if not token:
         return {
-            "error": (
-                "No access token. Pass access_token or set the "
-                "STACK_OVERFLOW_TOKEN environment variable."
-            )
+            "error": "No credentials found. Call setup_credentials(access_token=...) once to connect.",
+            "setup_url": "https://stackapps.com/apps/oauth/register"
         }
 
     params: dict = {

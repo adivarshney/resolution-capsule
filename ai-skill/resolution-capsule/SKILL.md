@@ -12,150 +12,108 @@ compatibility:
   mcp: resolution-capsule
 ---
 
-## What this skill does
+## The flow (keep it to one prompt)
 
-After you fix a bug, this skill:
-1. Captures the git diff as the fix
-2. Calls `generate_capsule()` to sanitize and produce a Stack Overflow draft
-3. Shows you the confidence rating and any redactions
-4. Calls `post_to_stack_overflow()` if the draft looks good
+After fixing a bug, do this in one shot:
 
-The whole loop closes in one step — no copy-pasting, no manual redaction.
+1. Capture the diff
+2. Generate the capsule silently
+3. Show a **single line** to the user and wait for yes/no
+4. Post if yes, show draft if no
 
----
-
-## Requirements
-
-The `resolution-capsule` MCP server must be running. If it isn't connected:
-
-```bash
-uvx resolution-capsule   # run once to verify it works
-```
-
-Then add to `~/.claude/settings.json`:
-```json
-{
-  "mcpServers": {
-    "resolution-capsule": {
-      "command": "uvx",
-      "args": ["resolution-capsule"]
-    }
-  }
-}
-```
-
-For Stack Overflow posting, `STACK_OVERFLOW_TOKEN` must be set (see github.com/adivarshney/resolution-capsule for setup).
+The user should never see intermediate steps, tool calls, or redaction details unless they ask.
 
 ---
 
-## Step-by-step workflow
-
-### Step 1 — Capture the diff
-
-Run this immediately after applying a fix:
+## Step 1 — Get the diff
 
 ```bash
 git diff HEAD
 ```
 
-If the diff is empty, check staged changes:
+If empty, try staged:
 ```bash
 git diff --cached
 ```
 
-If both are empty, the fix may already be committed — use:
+If both empty, the fix may be committed already:
 ```bash
 git show HEAD
 ```
 
-The diff is your `fix` input. Don't summarise it — pass it raw.
+Pass the raw diff as `fix`. Do not summarise it.
 
-### Step 2 — Extract context from the conversation
+---
 
-From the conversation so far, identify:
-- **problem**: what the user said was broken (use their words, not yours)
-- **root_cause**: what you determined was the underlying cause
-- **error**: the original error message or stack trace if one was shown
-- **environment**: any versions, OS, framework mentioned
-- **attempts**: things that were tried before the fix worked
+## Step 2 — Generate silently
 
-If you can't find root_cause in the conversation, make your best inference from the diff and state it clearly.
-
-### Step 3 — Generate the capsule
-
-Call the MCP tool:
+Call `generate_capsule()` without narrating what you're doing:
 
 ```
 generate_capsule(
-  problem = <from conversation>,
-  root_cause = <your diagnosis>,
-  fix = <raw git diff>,
-  error = <original error if available>,
-  environment = <versions/stack if mentioned>,
-  source = "ai-assisted",
-  mode = "balanced"
+  problem    = <what the user said was broken, in their words>,
+  root_cause = <your diagnosis from the fix>,
+  fix        = <raw git diff>,
+  error      = <original error message if one was shown>,
+  environment = <versions/framework if mentioned>,
+  source     = "ai-assisted"
 )
 ```
-
-### Step 4 — Review before posting
-
-Show the user:
-- The **confidence** field (e.g. "Ready for human review" or "Needs careful review")
-- The **redactions** list — what was stripped and how many
-- The **title** that will appear on Stack Overflow
-
-If confidence is `"Draft incomplete"` — stop. Ask the user for the missing root cause or fix details.
-
-If redactions include `Bearer token`, `Private key block`, or `OpenAI/API key` — flag this explicitly and ask the user to confirm before posting.
-
-Otherwise, ask: **"Post this to Stack Overflow?"** — one word answer is enough.
-
-### Step 5 — Post
-
-If the user confirms:
-
-```
-post_to_stack_overflow(
-  title = <from capsule>,
-  markdown = <from capsule>,
-  tags = <from capsule>
-)
-```
-
-Share the returned URL. Done.
-
-If `STACK_OVERFLOW_TOKEN` is not set, show the markdown draft instead and explain how to connect (see README link above).
 
 ---
 
-## What to skip
+## Step 3 — One prompt
 
-- Don't post if the fix is speculative or the user says "I'm not sure this works yet"
+Once you have the result, show **exactly this** (one line, fill in the blanks):
+
+```
+"[title]" — [N] things redacted. Post to Stack Overflow? yes/no
+```
+
+Example:
+```
+"How to fix: Cannot find module '@vitejs/plugin-react'" — 3 things redacted. Post to Stack Overflow? yes/no
+```
+
+Nothing else. No markdown, no redaction breakdown, no explanation. Just that line.
+
+---
+
+## Step 4 — Act on the answer
+
+**If yes:**
+Call `post_to_stack_overflow(title=..., markdown=..., tags=...)` and reply with just the URL:
+
+```
+Posted: https://stackoverflow.com/questions/...
+```
+
+**If no:**
+Show the full markdown draft so the user can copy it manually. One sentence: "Here's the draft if you want to post it yourself."
+
+**If credentials aren't set up yet** (post returns an error about missing credentials):
+Say: "You need to connect Stack Overflow once. Run `setup_credentials(access_token='...')` — get your token at stackapps.com/apps/oauth/register"
+Then stop. Don't retry posting.
+
+---
+
+## First-time setup (only needed once)
+
+If `credentials_status()` returns `configured: false`, pause before generating the capsule and say:
+
+```
+"To post to Stack Overflow automatically, run setup_credentials(access_token='YOUR_TOKEN') once.
+Get a free token at: stackapps.com/apps/oauth/register"
+```
+
+After setup, continue with the normal flow. This only happens once — credentials are saved permanently.
+
+---
+
+## What not to do
+
+- Don't narrate each tool call ("Now I'll call generate_capsule...")
+- Don't show the redaction list unless asked
 - Don't post if the diff is empty
-- Don't post if confidence is `"Draft incomplete"`
-- Don't invent a root cause if you genuinely don't know — say so and ask
-
----
-
-## If MCP tools aren't available
-
-Fall back to the CLI:
-
-```bash
-python3 -c "
-import json, sys
-sys.path.insert(0, '.')
-from resolution_capsule import build_capsule
-result = build_capsule({
-    'problem': '''PROBLEM''',
-    'rootCause': '''ROOT_CAUSE''',
-    'fix': '''FIX''',
-    'source': 'ai-assisted'
-})
-print(result['markdown'])
-print('---')
-print('Confidence:', result['confidence'])
-"
-```
-
-Show the markdown to the user and ask them to post manually.
+- Don't post if confidence is "Draft incomplete"
+- Don't ask more than one question
